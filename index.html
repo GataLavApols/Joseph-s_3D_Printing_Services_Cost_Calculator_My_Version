@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Joseph's 3D Printing Services — Cost Calculator</title>
+<style>
+  :root {
+    --bg: #0f172a;
+    --card: #1e293b;
+    --card-2: #273449;
+    --accent: #22d3ee;
+    --accent-2: #a78bfa;
+    --text: #f1f5f9;
+    --muted: #94a3b8;
+    --border: #334155;
+    --green: #34d399;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: "Segoe UI", system-ui, -apple-system, Roboto, Arial, sans-serif;
+    background: radial-gradient(1000px 600px at 20% -10%, #1e3a5f 0%, transparent 60%),
+                radial-gradient(900px 500px at 90% 0%, #4c1d95 0%, transparent 55%),
+                var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+  .app {
+    width: 100%;
+    max-width: 520px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 28px;
+    box-shadow: 0 20px 60px rgba(0,0,0,.45);
+  }
+  h1 {
+    margin: 0 0 4px;
+    font-size: 1.5rem;
+    letter-spacing: .2px;
+  }
+  h1 span { background: linear-gradient(90deg, var(--accent), var(--accent-2)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .subtitle { color: var(--muted); margin: 0 0 18px; font-size: .95rem; }
+  .formula {
+    background: #0b1220;
+    border: 1px dashed #475569;
+    border-radius: 12px;
+    padding: 12px 14px;
+    font-family: ui-monospace, Consolas, monospace;
+    font-size: .95rem;
+    margin-bottom: 20px;
+    text-align: center;
+  }
+  .formula small { display:block; font-family: inherit; color: var(--muted); font-size: .75rem; margin-bottom: 6px; letter-spacing: .6px; text-transform: uppercase; }
+  label { display:block; font-size: .85rem; color: var(--muted); margin: 14px 0 6px; }
+  select, input {
+    width: 100%;
+    padding: 12px 14px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: #0f1a2e;
+    color: var(--text);
+    font-size: 1rem;
+    outline: none;
+  }
+  select:focus, input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(34,211,238,.18); }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .hint { font-size: .78rem; color: var(--muted); margin-top: 6px; }
+  .btns { display:flex; gap:10px; margin-top:20px; }
+  button {
+    flex:1;
+    padding: 13px;
+    border-radius: 12px;
+    border: 0;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .calc { background: linear-gradient(90deg, var(--accent), var(--accent-2)); color: #0b1220; }
+  .calc:hover { filter: brightness(1.08); }
+  .reset { background: var(--card-2); color: var(--text); border: 1px solid var(--border); }
+  .result {
+    margin-top: 20px;
+    background: #0b1220;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 16px;
+    display: none;
+  }
+  .result.show { display:block; }
+  .line { display:flex; justify-content:space-between; padding:6px 0; font-size:.95rem; color:#cbd5e1; }
+  .line.total { border-top:1px solid var(--border); margin-top:8px; padding-top:12px; font-size:1.15rem; color:#fff; font-weight:800; }
+  .line.total span:last-child { color: var(--green); }
+  .meta { margin-top:10px; font-size:.8rem; color:var(--muted); }
+  .error { color:#fca5a5; font-size:.85rem; margin-top:10px; min-height:1.2em; }
+</style>
+</head>
+<body>
+  <main class="app">
+    <h1>Joseph's 3D Printing <span>Cost Calculator</span></h1>
+    <p class="subtitle">Realistic pricing for your 3D printing service.</p>
+
+    <div class="formula">
+      <small>The Realistic Pricing Formula</small>
+      Total Price = (Grams × ₱2.50) + (Hours × ₱50)
+    </div>
+
+    <label for="filament">Type of Filament</label>
+    <select id="filament">
+      <option value="PLA">PLA</option>
+      <option value="PLA+">PLA+</option>
+      <option value="PETG">PETG</option>
+      <option value="ABS">ABS</option>
+      <option value="ASA">ASA</option>
+      <option value="TPU">TPU (Flexible)</option>
+      <option value="Nylon">Nylon</option>
+      <option value="Resin (Standard)">Resin (Standard)</option>
+    </select>
+
+    <label for="grams">Amount of filament used (in grams)</label>
+    <input id="grams" type="number" min="0" step="0.1" placeholder="e.g. 120" />
+    <div class="hint">Filament cost = grams × ₱2.50</div>
+
+    <label>Printing time</label>
+    <div class="row">
+      <div>
+        <input id="hours" type="number" min="0" step="1" placeholder="Hours e.g. 5" />
+      </div>
+      <div>
+        <input id="minutes" type="number" min="0" max="59" step="1" placeholder="Minutes e.g. 30" />
+      </div>
+    </div>
+    <div class="hint">Time cost = total hours × ₱50. Minutes are converted to hours (min ÷ 60).</div>
+
+    <div class="error" id="error"></div>
+
+    <div class="btns">
+      <button class="calc" onclick="calculate()">Calculate Cost</button>
+      <button class="reset" onclick="resetForm()">Reset</button>
+    </div>
+
+    <div class="result" id="result">
+      <div class="line"><span>Filament (<span id="rFilament">PLA</span>)</span><span id="rFilCost">₱0.00</span></div>
+      <div class="line"><span>Grams used</span><span id="rGrams">0 g</span></div>
+      <div class="line"><span>Print time</span><span id="rTime">0h 0m</span></div>
+      <div class="line"><span>Time charge</span><span id="rTimeCost">₱0.00</span></div>
+      <div class="line total"><span>Total Price</span><span id="rTotal">₱0.00</span></div>
+      <div class="meta" id="rBreakdown"></div>
+    </div>
+  </main>
+
+<script>
+  const FILAMENT_RATE = 2.50; // ₱ per gram
+  const TIME_RATE = 50;       // ₱ per hour
+
+  function peso(n) {
+    return "₱" + n.toLocaleString("en-PH", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
+  function calculate() {
+    const filament = document.getElementById("filament").value;
+    const grams = parseFloat(document.getElementById("grams").value);
+    const hours = parseFloat(document.getElementById("hours").value) || 0;
+    const minutes = parseFloat(document.getElementById("minutes").value) || 0;
+    const errorEl = document.getElementById("error");
+
+    errorEl.textContent = "";
+
+    if (isNaN(grams) || grams < 0) {
+      errorEl.textContent = "Please enter a valid amount of filament in grams (0 or more).";
+      return;
+    }
+    if (hours < 0 || minutes < 0 || minutes >= 60) {
+      errorEl.textContent = "Please enter valid printing time (hours ≥ 0, minutes 0–59).";
+      return;
+    }
+    if (grams === 0 && hours === 0 && minutes === 0) {
+      errorEl.textContent = "Enter grams and/or printing time to calculate.";
+      return;
+    }
+
+    const totalHours = hours + (minutes / 60);
+    const filamentCost = grams * FILAMENT_RATE;
+    const timeCost = totalHours * TIME_RATE;
+    const total = filamentCost + timeCost;
+
+    document.getElementById("rFilament").textContent = filament;
+    document.getElementById("rFilCost").textContent = peso(filamentCost);
+    document.getElementById("rGrams").textContent = grams + " g";
+    document.getElementById("rTime").textContent = hours + "h " + minutes + "m (" + totalHours.toFixed(2) + " hrs)";
+    document.getElementById("rTimeCost").textContent = peso(timeCost);
+    document.getElementById("rTotal").textContent = peso(total);
+    document.getElementById("rBreakdown").textContent =
+      "(" + grams + " × ₱2.50) + (" + totalHours.toFixed(2) + " × ₱50) = " + peso(total);
+
+    document.getElementById("result").classList.add("show");
+  }
+
+  function resetForm() {
+    document.getElementById("filament").value = "PLA";
+    document.getElementById("grams").value = "";
+    document.getElementById("hours").value = "";
+    document.getElementById("minutes").value = "";
+    document.getElementById("error").textContent = "";
+    document.getElementById("result").classList.remove("show");
+  }
+
+  // Allow Enter key to calculate
+  document.addEventListener("keydown", function(e) {
+    if (e.key === "Enter") calculate();
+  });
+</script>
+</body>
+</html>
